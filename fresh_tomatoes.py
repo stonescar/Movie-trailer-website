@@ -9,7 +9,7 @@ main_page_head = '''
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>Fresh Tomatoes!</title>
+    <title>Movie Trailers</title>
 
     <!-- Bootstrap 3 -->
     <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css">
@@ -19,6 +19,7 @@ main_page_head = '''
     <style type="text/css" media="screen">
         body {
             padding-top: 80px;
+            background: #eeeeee;
         }
         #trailer .modal-dialog {
             margin-top: 200px;
@@ -40,7 +41,7 @@ main_page_head = '''
             padding-top: 20px;
         }
         .movie-tile:hover {
-            background-color: #EEE;
+            background-color: #ffffff;
             cursor: pointer;
         }
         .scale-media {
@@ -55,6 +56,39 @@ main_page_head = '''
             left: 0;
             top: 0;
             background-color: white;
+        }
+        .img-cont {
+            position: relative;
+            display: inline-block;
+        }
+        div:hover > .img-cont {
+            -webkit-box-shadow: 0px 0px 7px rgba(0,0,0,0.5);
+                    box-shadow: 0px 0px 7px rgba(0,0,0,0.5);            
+        }
+        .rating {
+            background: #f3ce00;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            top: -7px;
+            right: -7px;
+            position: absolute;
+            color: white;
+            line-height: 2;
+            font-weight: bold;
+            font-size: 1.45em;
+            -webkit-box-shadow: -5px 5px 3px rgba(0,0,0,0.5);
+                    box-shadow: -5px 5px 3px rgba(0,0,0,0.5);
+            z-index: 99;
+        }
+        a:hover, a:active, a:focus {
+            color: black;
+            text-decoration: none;
+        }
+        .storyline {
+            color: #808080;
+            font-size: 0.85em;
+            margin-top: -8px;
         }
     </style>
     <script type="text/javascript" charset="utf-8">
@@ -81,9 +115,17 @@ main_page_head = '''
             $(this).next("div").show("fast", showNext);
           });
         });
+        // Initialize tooltip on IMDB links
+        $(function () {
+          $('[data-toggle="tooltip"]').tooltip()
+        })
+        // Don't open modal when IMDB rating is clicked
+        $(document).on('click', '.rating', function() {
+            exit();
+        })
     </script>
 </head>
-'''
+''' # NOQA
 
 
 # The main page layout and title bar
@@ -107,7 +149,7 @@ main_page_content = '''
       <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
         <div class="container">
           <div class="navbar-header">
-            <a class="navbar-brand" href="#">Fresh Tomatoes Movie Trailers</a>
+            <a class="navbar-brand" href="#">Some of my favorite movies</a>
           </div>
         </div>
       </div>
@@ -117,16 +159,20 @@ main_page_content = '''
     </div>
   </body>
 </html>
-'''
+''' # NOQA
 
 
 # A single movie entry html template
 movie_tile_content = '''
 <div class="col-md-6 col-lg-4 movie-tile text-center" data-trailer-youtube-id="{trailer_youtube_id}" data-toggle="modal" data-target="#trailer">
-    <img src="{poster_image_url}" width="220" height="342">
+    <div class="img-cont">
+        <a href="{imdb_url}" target="new" class="rating" data-toggle="tooltip" data-placement="left" data-dismiss="modale" title="Go to IMDB">{imdb_rating}</a>
+        <img src="{poster_image_url}" width="220" height="342">
+    </div>
     <h2>{movie_title}</h2>
+    <p class="storyline">{movie_storyline}</p>
 </div>
-'''
+''' # NOQA
 
 
 def create_movie_tiles_content(movies):
@@ -144,8 +190,11 @@ def create_movie_tiles_content(movies):
         # Append the tile for the movie with its content filled in
         content += movie_tile_content.format(
             movie_title=movie.title,
+            movie_storyline=movie.storyline if len(movie.storyline) < 220 else movie.storyline[:215]+"...",
             poster_image_url=movie.poster_image_url,
-            trailer_youtube_id=trailer_youtube_id
+            trailer_youtube_id=trailer_youtube_id,
+            imdb_url=movie.imdb_url,
+            imdb_rating=str(movie.imdb_rating)[0]+","+str(movie.imdb_rating)[2]
         )
     return content
 
